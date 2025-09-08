@@ -37,7 +37,7 @@
     $(document).ready(function() {
         $.ajax({
             type: "GET",
-            url: "http://localhost:8080/item/list",
+            url: "http://localhost:8090/item/list",
             xhrFields:{
                 withCredentials:true,
             },
@@ -60,7 +60,7 @@
             var dom =
                 "<tr data-id='"+itemVO.id+"' id='itemDetail"+itemVO.id+"'>\
 			<td>"+itemVO.title+"</td>\
-			<td><img style='width:100px;heigth:auto;' src='"+itemVO.imgUrl+"'/></td>\
+			<td><img style='width:100px;height:auto;' src='"+itemVO.imgUrl+"'/></td>\
 			<td>"+itemVO.description+"</td>\
 			<td>"+itemVO.price+"</td>\
 			<td>"+itemVO.stock+"</td>\

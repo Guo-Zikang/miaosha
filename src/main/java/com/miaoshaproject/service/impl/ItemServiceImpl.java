@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -76,7 +77,16 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemModel> listItem() {
-        return null;
+        List<ItemDO> itemDOList = itemDOMapper.listItem();
+
+        //使用Java8的stream API
+        List<ItemModel> itemModelList = itemDOList.stream().map(itemDO -> {
+            ItemStockDO itemStockDO = itemStockDOMapper.selectByItemId(itemDO.getId());
+            ItemModel itemModel = this.convertModelFromDataObject(itemDO, itemStockDO);
+            return itemModel;
+        }).collect(Collectors.toList());
+
+        return itemModelList;
     }
 
     @Override
@@ -93,10 +103,29 @@ public class ItemServiceImpl implements ItemService {
         return itemModel;
     }
 
+    @Override
+    @Transactional
+    public boolean decreaseStock(Integer itemId, Integer amount) throws BusinessException {
+        int affectedRow = itemStockDOMapper.decreaseStock(itemId, amount);
+        if (affectedRow > 0) {
+            //更新库存成功
+            return true;
+        } else {
+            //更新库存失败
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public void increaseSales(Integer itemId, Integer amount) throws BusinessException {
+        itemDOMapper.increaseSales(itemId, amount);
+    }
+
     private ItemModel convertModelFromDataObject(ItemDO itemDO, ItemStockDO itemStockDO) {
         ItemModel itemModel = new ItemModel();
         BeanUtils.copyProperties(itemDO, itemModel);
-        itemModel.setPrice(new BigDecimal(itemDO.getPrice()));
+        itemModel.setPrice(BigDecimal.valueOf(itemDO.getPrice()));
         itemModel.setStock(itemStockDO.getStock());
         return itemModel;
     }
